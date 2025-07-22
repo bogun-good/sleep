@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수면 건강 퀴즈</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 1.5vw;
+      font-size: 1.125vw;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .quiz-container {
+      width: calc(50% + 1cm);
+      max-width: calc(600px + 1cm);
+      text-align: center;
+    }
+    .question-container {
+      background-color: #171bd7;
+      color: white;
+      border-radius: 0.75vw;
+      padding: 1.5vw;
+      margin-bottom: 1.5vw;
+      font-size: calc(1.3125vw + 2pt);
+      text-align: center;
+    }
+    .answer-container {
+      background-color: white;
+      padding: 1.5vw;
+      border-radius: 0.75vw;
+      margin-bottom: 2.25vw;
+      text-align: center;
+    }
+    .answer-container label {
+      display: block;
+      margin: 0.75vw auto;
+      font-size: calc(1.125vw + 2pt);
+      font-weight: bold;
+      padding: 0.75vw;
+      cursor: pointer;
+      border: 0.375px solid #ddd;
+      border-radius: 0.375vw;
+      transition: background-color 0.2s;
+      max-width: 80%;
+    }
+    .answer-container label:hover {
+      background-color: #f0f0f0;
+    }
+    .answer-container input[type="radio"] {
+      display: none;
+    }
+    .answer-container input[type="radio"]:checked + label {
+      background-color: #e0e0ff;
+      border-color: #171bd7;
+    }
+    .btn {
+      padding: 0.9375vw 1.875vw;
+      border: none;
+      background-color: #333;
+      color: white;
+      font-size: 1.125vw;
+      cursor: pointer;
+      margin-top: 0.75vw;
+      border-radius: 0.375vw;
+      width: 100%;
+      max-width: 80%;
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
+    .btn:hover {
+      background-color: #555;
+    }
+    .feedback {
+      font-weight: bold;
+      margin-top: 0.75vw;
+      font-size: 1.125vw;
+      text-align: center;
+      color: gray;
+    }
+    .feedback.correct {
+      color: green;
+    }
+    .feedback.incorrect {
+      color: red;
+    }
+    .rabbits {
+      font-size: calc(100vw * 0.03);
+      text-align: center;
+      margin: 0.75vw 0;
+      visibility: hidden;
+    }
+    .rabbits.visible {
+      visibility: visible;
+    }
+    .summary {
+      background-color: #fff;
+      padding: 1.5vw;
+      border-radius: 0.75vw;
+      font-size: 1.125vw;
+      text-align: center;
+    }
+    textarea {
+      font-size: calc(1.125vw + 2pt);
+      font-weight: bold;
+      padding: 0.75vw;
+      border-radius: 0.375vw;
+      resize: vertical;
+      width: 80%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      display: block;
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 1.875vw;
+        font-size: 1.3125vw;
+      }
+      .quiz-container {
+        width: calc(80% + 1cm);
+      }
+      .question-container {
+        font-size: calc(1.5vw + 2pt);
+        padding: 1.875vw;
+      }
+      .answer-container {
+        padding: 1.875vw;
+      }
+      .answer-container label {
+        font-size: calc(1.3125vw + 2pt);
+        font-weight: bold;
+        padding: 1.125vw;
+      }
+      .btn {
+        padding: 1.125vw 2.25vw;
+        font-size: 1.3125vw;
+      }
+      .rabbits {
+        font-size: calc(100vw * 0.0375);
+      }
+      .summary {
+        font-size: 1.3125vw;
+      }
+      textarea {
+        font-size: calc(1.3125vw + 2pt);
+        font-weight: bold;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 2.25vw;
+        font-size: 1.5vw;
+      }
+      .quiz-container {
+        width: calc(90% + 1cm);
+      }
+      .question-container {
+        font-size: calc(1.6875vw + 2pt);
+        padding: 2.25vw;
+      }
+      .answer-container {
+        padding: 2.25vw;
+      }
+      .answer-container label {
+        font-size: calc(1.5vw + 2pt);
+        font-weight: bold;
+        padding: 1.5vw;
+      }
+      .btn {
+        padding: 1.5vw 3vw;
+        font-size: 1.5vw;
+      }
+      .rabbits {
+        font-size: calc(100vw * 0.045);
+      }
+      .summary {
+        font-size: 1.5vw;
+      }
+      textarea {
+        font-size: calc(1.5vw + 2pt);
+        font-weight: bold;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div id="quiz"></div>
+    <div class="rabbits" id="rabbits"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        q: "수면이 건강에 중요한 이유는 무엇인가요?",
+        options: ["① 비만이 되기 쉽다.", "② 기억력과 학습 능력이 향상된다.", "③ 스트레스가 늘어난다.", "④ 면역력이 약해진다."],
+        answer: 1
+      },
+      {
+        q: "생체 리듬에 맞게 생활하는 것은 왜 중요한가요?",
+        options: ["① 건강을 유지하고 질병을 예방하기 위해", "② 늦게 자도 상관없기 위해", "③ 운동을 하지 않아도 되기 위해", "④ 야식을 자주 먹기 위해"],
+        answer: 0
+      },
+      {
+        q: "좋은 수면을 위해 피해야 할 행동은 무엇인가요?",
+        options: ["① 매일 30분 이상 실외 활동하기", "② 따뜻한 물로 샤워하기", "③ 방을 어둡게 하기", "④ 잠자기 30분 전 스마트폰 사용하기"],
+        answer: 3
+      },
+      {
+        q: "잠을 충분히 자면 우리 몸에 어떤 변화가<br>생길까?",
+        options: ["① 식욕이 늘어나 비만이 된다.", "② 면역력이 약해진다.", "③ 기억력과 집중력이 좋아진다.", "④ 스트레스가 늘어난다."],
+        answer: 2
+      },
+      {
+        q: "잠을 잘 자기 위해 낮에 해야 할 일은<br>무엇인가요?",
+        options: ["① 늦은 시간에 낮잠 자기", "② 햇볕을 충분히 쬐고 신체 활동하기", "③ 야식을 많이 먹기", "④ 전자 기기를 오래 사용하기"],
+        answer: 1
+      },
+      {
+        q: "수면 부족이 우리 몸에 미치는 영향은<br>무엇인가요?",
+        options: ["① 면역력이 좋아진다.", "② 창의력이 발달한다.", "③ 기분이 좋아진다.", "④ 비만이 될 가능성이 높아진다."],
+        answer: 3
+      },
+      {
+        q: "잠을 잘 자기 위해 밤 9시 이후에 하지 말아야 할 일은 무엇인가요?",
+        options: ["① 스마트폰 사용하기", "② 따뜻한 물로 샤워하기", "③ 방을 어둡게 하기", "④ 음식을 먹지 않기"],
+        answer: 0
+      },
+      {
+        q: "블루라이트가 수면에 미치는 영향은<br>무엇인가요?",
+        options: ["① 잠을 유도하는 호르몬 분비를 촉진한다.", "② 면역력을 높여준다.", "③ 잠을 유도하는 호르몬 분비를 억제한다.", "④ 식욕을 조절한다."],
+        answer: 2
+      },
+      {
+        q: "좋은 수면을 위해 침실 환경을 어떻게<br>해야 하나요?",
+        options: ["① 방을 어둡게 하고 적절한 온도 유지하기", "② 불을 켜 놓고 밝게 하기", "③ 전자 기기를 가까이 두기", "④ 늦은 시간에 야식을 먹기"],
+        answer: 0
+      },
+      {
+        q: "주관식: 해가 뜨면 잠에서 깨고, 밤이 되면 다시 잠에 드는 것처럼 일정한 기간을 두고 같은 생리적 현상이 반복적으로 나타나는 것을 무엇이라고<br>하나요?",
+        answer: ["생체리듬", "생체 리듬"],
+        subjective: true
+      }
+    ];
+
+    let current = 0;
+    let correct = 0;
+    let incorrect = 0;
+    let answers = [];
+    let rabbitCount = 0;
+
+    function renderQuestion() {
+      const quiz = document.getElementById("quiz");
+      const rabbits = document.getElementById("rabbits");
+      const feedback = document.getElementById("feedback");
+      if (current >= quizData.length) return showSummary();
+
+      const q = quizData[current];
+      let html = `<div class="question-container">${current + 1}. ${q.q}</div>`;
+
+      if (q.subjective) {
+        html += `
+          <div class="answer-container">
+            <textarea id="subjective" rows="4"></textarea><br/>
+            <button class="btn" onclick="submitSubjective()">제출</button>
+          </div>
+        `;
+      } else {
+        html += `<div class="answer-container">`;
+        q.options.forEach((opt, i) => {
+          html += `<div><input type="radio" name="q${current}" value="${i}" id="opt${i}"><label for="opt${i}">${opt}</label></div>`;
+        });
+        html += `<button class="btn" onclick="submitAnswer()">제출</button></div>`;
+      }
+
+      quiz.innerHTML = html;
+      rabbits.classList.remove("visible");
+      rabbits.innerText = "🐰".repeat(rabbitCount);
+      feedback.innerText = "";
+    }
+
+    function submitAnswer() {
+      const selected = document.querySelector(`input[name="q${current}"]:checked`);
+      const rabbits = document.getElementById("rabbits");
+      const feedback = document.getElementById("feedback");
+      if (!selected) return alert("답을 선택해 주세요!");
+      const answer = parseInt(selected.value);
+      const isCorrect = answer === quizData[current].answer;
+      answers.push({ question: quizData[current].q, yourAnswer: quizData[current].options[answer], isCorrect });
+
+      if (isCorrect) {
+        correct++;
+        rabbitCount++;
+        feedback.innerText = "정답";
+        feedback.classList.remove("incorrect");
+        feedback.classList.add("correct");
+        rabbits.innerText = "🐰".repeat(rabbitCount);
+        rabbits.classList.add("visible");
+      } else {
+        incorrect++;
+        feedback.innerText = "오답";
+        feedback.classList.remove("correct");
+        feedback.classList.add("incorrect");
+      }
+
+      current++;
+      setTimeout(renderQuestion, 1000);
+    }
+
+    function submitSubjective() {
+      const text = document.getElementById("subjective").value.trim();
+      const rabbits = document.getElementById("rabbits");
+      const feedback = document.getElementById("feedback");
+      if (text === "") return alert("답변을 입력해 주세요.");
+      const normalizedInput = text.toLowerCase().trim();
+      const isCorrect = quizData[current].answer.some(ans => ans.toLowerCase().trim() === normalizedInput);
+      answers.push({ question: quizData[current].q, yourAnswer: text, isCorrect });
+
+      if (isCorrect) {
+        correct++;
+        rabbitCount++;
+        feedback.innerText = "정답";
+        feedback.classList.remove("incorrect");
+        feedback.classList.add("correct");
+        rabbits.innerText = "🐰".repeat(rabbitCount);
+        rabbits.classList.add("visible");
+      } else {
+        incorrect++;
+        feedback.innerText = "오답";
+        feedback.classList.remove("correct");
+        feedback.classList.add("incorrect");
+      }
+
+      current++;
+      setTimeout(renderQuestion, 1000);
+    }
+
+    function showSummary() {
+      const quiz = document.getElementById("quiz");
+      const rabbits = document.getElementById("rabbits");
+      const feedback = document.getElementById("feedback");
+      // Display 10 rabbits if all answers are correct
+      rabbits.innerText = correct === quizData.length ? "🐰".repeat(10) : "🐰".repeat(rabbitCount);
+      rabbits.classList.add("visible");
+      feedback.innerText = "";
+
+      let html = `<div class="summary">
+        <h2>🎉 모두 풀었습니다. 성공!!</h2>
+        <p>정답: ${correct}개 / 오답: ${incorrect}개</p>
+        <hr />`;
+
+      answers.forEach((a, i) => {
+        html += `<p><strong>${i + 1}. ${a.question}</strong><br/>당신의 답변: ${a.yourAnswer}<br/>`;
+        if (a.isCorrect) html += `<span style="color:green">정답</span></p>`;
+        else html += `<span style="color:red">오답</span></p>`;
+      });
+
+      html += `<button class="btn" onclick="location.reload()">다시 풀기</button></div>`;
+      quiz.innerHTML = html;
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>
